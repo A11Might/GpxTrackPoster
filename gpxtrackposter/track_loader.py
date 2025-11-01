@@ -119,19 +119,34 @@ class TrackLoader:
 
         return self._filter_and_merge_tracks(tracks)
 
-    def load_strava_tracks(self, strava_config: str) -> typing.List[Track]:
+    def load_strava_tracks(self) -> typing.List[Track]:
         tracks = []
         tracks_names = []
         if self.cache_dir:
-            self.strava_cache_file = os.path.join(self.cache_dir, strava_config)
+            self.strava_cache_file = os.path.join(self.cache_dir, "strava_cache.json")
             if os.path.isfile(self.strava_cache_file):
                 with open(self.strava_cache_file, encoding="utf8") as f:
                     strava_cache_data = json.load(f)
                     tracks = [self._strava_cache_to_track(i) for i in strava_cache_data]
                     tracks_names = [track.file_names[0] for track in tracks]
 
-        with open(strava_config, encoding="utf8") as f:
-            strava_data = json.load(f)
+        # 从环境变量读取配置
+        strava_data = {
+            'client_id': os.getenv('CLIENT_ID'),
+            'client_secret': os.getenv('CLIENT_SECRET'),
+            'refresh_token': os.getenv('REFRESH_TOKEN'),
+        }
+
+        # 验证必需的环境变量
+        if not all([strava_data['client_id'], strava_data['client_secret'], strava_data['refresh_token']]):
+            raise ValueError(
+                "Missing required environment variables for Strava API. "
+                "Please set: CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN"
+            )
+
+        # 可选的活动类型过滤
+        if os.getenv('ACTIVITY_TYPE'):
+            strava_data['activity_type'] = os.getenv('ACTIVITY_TYPE')
         filter_type = strava_data.pop("activity_type", None)
         client = Client()
         response = client.refresh_access_token(**strava_data)

@@ -163,9 +163,8 @@ def main() -> None:
     args_parser.add_argument(
         "--from-strava",
         dest="from_strava",
-        metavar="FILE",
-        type=str,
-        help="JSON file containing config used to get activities from strava",
+        action="store_true",
+        help="Get activities from Strava using environment variables (CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN)",
     )
     args_parser.add_argument("--verbose", dest="verbose", action="store_true", help="Verbose logging.")
     args_parser.add_argument("--logfile", dest="logfile", metavar="FILE", type=str)
@@ -242,7 +241,7 @@ def main() -> None:
         print("Clearing cache...")
         loader.clear_cache()
     if args.from_strava:
-        tracks = loader.load_strava_tracks(args.from_strava)
+        tracks = loader.load_strava_tracks()
     else:
         tracks = loader.load_tracks(args.gpx_dir)
     if not tracks:
