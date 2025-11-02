@@ -58,6 +58,4 @@ sdist
 
 # Project specific
 gpx_dir/*
-output/*
 data
-*.svg
